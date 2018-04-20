@@ -28,7 +28,7 @@ matrix:
     - sudo: false
       script:
         - shellcheck --version
-        - shellcheck components/studio/bin/hab-studio.sh
+        - find . -name "*.*sh" -exec shellcheck {} \;
 
 # #
 # # Job for testing Habitat Rust program components
