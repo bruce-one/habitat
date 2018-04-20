@@ -28,7 +28,7 @@ matrix:
     - sudo: false
       script:
         - shellcheck --version
-        - find . -name "*.*sh" -exec shellcheck {} \;
+        - find . -name "*.*sh" -exec shellcheck --exclude=1090,1091,1117,2148,2034 {} \;
 
 # #
 # # Job for testing Habitat Rust program components
