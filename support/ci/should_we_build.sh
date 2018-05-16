@@ -79,7 +79,6 @@ echo "Performing a preliminary check for changes in the following \"master\" fil
 echo
 # All this sed is to get the individual regex options to print nicely
 echo "    $master_files" | sed "s,|,\n    ,g" | sed 's,\\,,g'
-echo "    $master_files"
 echo
 
 if echo "${CHANGED_FILES}" | grep --quiet --extended-regexp "^(${master_files})" ; then
