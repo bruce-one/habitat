@@ -37,7 +37,7 @@ matrix:
         - COMPONENTS=bin
         - AFFECTED_FILES="Cargo.lock"
         - AFFECTED_DIRS="$_RUST_HAB_BIN_COMPONENTS $_RUST_HAB_LIB_COMPONENTS"
-      rust: stable
+      rust: 1.25.0
       sudo: false
       services:
         - docker
@@ -62,7 +62,7 @@ matrix:
         directories:
           - "$HOME/pkgs"
       before_script:
-        - rustup component add rustfmt-preview
+        - rustup --verbose component add rustfmt-preview
       before_install:
         - ./support/ci/fast_pass.sh || exit 0
         - ./support/ci/compile_libsodium.sh
