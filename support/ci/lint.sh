@@ -64,6 +64,8 @@ fi
 info "Checking for version $rf_version of rustfmt"
 actual="$(rustfmt --version | cut -d ' ' -f 1)"
 if [[ "$actual" != "$rf_version-nightly" ]]; then
+  command -v rustfmt
+  rustfmt --version
   exit_with "\`rustfmt' version $actual doesn't match expected: $rf_version" 2
 fi
 
