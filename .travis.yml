@@ -62,7 +62,8 @@ matrix:
         directories:
           - "$HOME/pkgs"
       before_script:
-        - rustup --verbose component add rustfmt-preview
+        - rustup toolchain install 1.25.0
+        - rustup component add --toolchain 1.25.0 rustfmt-preview
       before_install:
         - ./support/ci/fast_pass.sh || exit 0
         - ./support/ci/compile_libsodium.sh
