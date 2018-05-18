@@ -49,6 +49,7 @@ exit_with() {
 
 program=$(basename "$0")
 rf_version="0.3.8"
+rust_toolchain_version="1.25.0"
 
 # Fix commit range in Travis, if set.
 # See: https://github.com/travis-ci/travis-ci/issues/4596
@@ -56,11 +57,18 @@ if [ -n "${TRAVIS_COMMIT_RANGE:-}" ]; then
   TRAVIS_COMMIT_RANGE="${TRAVIS_COMMIT_RANGE/.../..}"
 fi
 
+info "Setting rust to $rust_toolchain_version toolchain"
+if ! command -v rustup >/dev/null; then
+  exit_with "Program \`rustup' not found on PATH, aborting" 1
+fi
+rustup override set "$rust_toolchain_version"
+
 info "Checking for rustfmt"
 if ! command -v rustfmt >/dev/null; then
   exit_with "Program \`rustfmt' not found on PATH, aborting" 1
 fi
 
+alias rustfmt='rustup run 1.25.0 rustfmt'
 info "Checking for version $rf_version of rustfmt"
 actual="$(rustfmt --version | cut -d ' ' -f 1)"
 if [[ "$actual" != "$rf_version-nightly" ]]; then
@@ -71,7 +79,7 @@ fi
 
 failed="$(mktemp -t "$(basename "$0")-failed-XXXX")"
 # shellcheck disable=2154
-trap 'code=$?; rm -f $failed; exit $code' INT TERM EXIT
+trap 'code=$?; rm -f "$failed"; rustup override unset; exit $code' INT TERM EXIT
 
 if [[ -n "${LINT_ALL:-}" ]]; then
   cmd="find components -type f -name '*.rs'"
