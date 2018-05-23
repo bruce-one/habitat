@@ -13,10 +13,10 @@ fi
 info() {
   case "${TERM:-}" in
     *term | xterm-* | rxvt | screen | screen-*)
-      printf -- "   \033[1;32m%s: \033[1;37m%s\033[0m\n" "${program}" "$1"
+      printf -- "   \033[1;32m${program}: \033[1;37m$1\033[0m\n"
       ;;
     *)
-      printf -- "   %s: %s\n" "${program}" "$1"
+      printf -- "   ${program}: $1\n"
       ;;
   esac
   return 0
@@ -28,7 +28,6 @@ warn() {
       >&2 echo -e "   \033[1;32m${program}: \033[1;33mWARN \033[1;37m$1\033[0m"
       ;;
     *)
-      # shellcheck disable=2154
       >&2 echo "   ${pkg_name}: WARN $1"
       ;;
   esac
@@ -38,18 +37,17 @@ warn() {
 exit_with() {
   case "${TERM:-}" in
     *term | xterm-* | rxvt | screen | screen-*)
-      >&2 printf -- "\033[1;31mERROR: \033[1;37m%s\033[0m\n" "$1"
+      >&2 printf -- "\033[1;31mERROR: \033[1;37m$1\033[0m\n"
       ;;
     *)
-      >&2 printf -- "ERROR: %s\n" "$1"
+      >&2 printf -- "ERROR: $1\n"
       ;;
   esac
-  exit "$2"
+  exit $2
 }
 
-program=$(basename "$0")
-rf_version="0.3.8"
-rust_toolchain_version="1.25.0"
+program=$(basename $0)
+rf_version="0.4.1"
 
 # Fix commit range in Travis, if set.
 # See: https://github.com/travis-ci/travis-ci/issues/4596
@@ -57,29 +55,13 @@ if [ -n "${TRAVIS_COMMIT_RANGE:-}" ]; then
   TRAVIS_COMMIT_RANGE="${TRAVIS_COMMIT_RANGE/.../..}"
 fi
 
-info "Setting rust to $rust_toolchain_version toolchain"
-if ! command -v rustup >/dev/null; then
-  exit_with "Program \`rustup' not found on PATH, aborting" 1
-fi
-rustup override set "$rust_toolchain_version"
-
 info "Checking for rustfmt"
 if ! command -v rustfmt >/dev/null; then
   exit_with "Program \`rustfmt' not found on PATH, aborting" 1
 fi
 
-alias rustfmt='rustup run 1.25.0 rustfmt'
-info "Checking for version $rf_version of rustfmt"
-actual="$(rustfmt --version | cut -d ' ' -f 1)"
-if [[ "$actual" != "$rf_version-nightly" ]]; then
-  command -v rustfmt
-  rustfmt --version
-  exit_with "\`rustfmt' version $actual doesn't match expected: $rf_version" 2
-fi
-
-failed="$(mktemp -t "$(basename "$0")-failed-XXXX")"
-# shellcheck disable=2154
-trap 'code=$?; rm -f "$failed"; rustup override unset; exit $code' INT TERM EXIT
+failed="$(mktemp -t "$(basename $0)-failed-XXXX")"
+trap 'code=$?; rm -f $failed; exit $code' INT TERM EXIT
 
 if [[ -n "${LINT_ALL:-}" ]]; then
   cmd="find components -type f -name '*.rs'"
@@ -96,7 +78,7 @@ else
   info "Selecting files from Git via: '$cmd'"
 fi
 
-eval "$cmd" | while read -r file; do
+eval "$cmd" | while read file; do
   case "${file##*.}" in
     rs)
       if [ ! -e "$file" ]; then
@@ -139,13 +121,13 @@ eval "$cmd" | while read -r file; do
   esac
 done
 
-if [[ -s "$failed" ]]; then
+if [[ $(cat "$failed" | wc -l) -gt 0 ]]; then
   echo
   echo
   warn "Summary: One or more files failed linting:"
-  while read -r file; do
+  cat "$failed" | while read file; do
     warn "  * $file"
-  done < "$failed"
+  done
   exit_with "File(s) failed linting" 10
 else
   info "Summary: All checked files passed their lints."
